@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Simulator - Year 10 Science</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #000000, #1a1a2e);
+            color: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #4a9eff;
+            text-shadow: 0 0 10px #4a9eff;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #cccccc;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .canvas-section {
+            flex: 1;
+            min-width: 600px;
+        }
+
+        #canvas {
+            border: 3px solid #4a9eff;
+            background: radial-gradient(circle, #0a0a1e, #000000);
+            display: block;
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            cursor: crosshair;
+            box-shadow: 0 0 20px rgba(74, 158, 255, 0.3);
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid rgba(74, 158, 255, 0.3);
+        }
+
+        .controls h3 {
+            color: #4a9eff;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-small {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-medium {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .btn-large {
+            background: linear-gradient(135deg, #ffd89b 0%, #ff6b6b 100%);
+            color: white;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            color: white;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .challenge-section {
+            flex: 0 0 350px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(74, 158, 255, 0.3);
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .challenge {
+            background: rgba(74, 158, 255, 0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4a9eff;
+        }
+
+        .challenge h3 {
+            color: #4a9eff;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .challenge p {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+
+        .challenge.active {
+            background: rgba(74, 158, 255, 0.2);
+            border-left-color: #ffcc00;
+        }
+
+        .info-box {
+            background: rgba(255, 204, 0, 0.1);
+            border: 1px solid rgba(255, 204, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .info-box h4 {
+            color: #ffcc00;
+            margin-bottom: 8px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 15px;
+            border-radius: 5px;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #aaaaaa;
+        }
+
+        .stat-value {
+            font-size: 1.2em;
+            color: #4a9eff;
+            font-weight: bold;
+        }
+
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .instructions {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .instructions h4 {
+            color: #00ff00;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .challenge-section {
+                flex: 1;
+                max-height: none;
+            }
+
+            .canvas-section {
+                min-width: 100%;
+            }
+        }
+
+        /* Scrollbar styling */
+        .challenge-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .challenge-section::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .challenge-section::-webkit-scrollbar-thumb {
+            background: rgba(74, 158, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        .challenge-section::-webkit-scrollbar-thumb:hover {
+            background: rgba(74, 158, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🌌 Gravity Simulator 🌌</h1>
+        <p class="subtitle">Explore how gravity shapes the universe</p>
+    </header>
+
+    <div class="main-container">
+        <div class="canvas-section">
+            <canvas id="canvas"></canvas>
+            
+            <div class="controls">
+                <h3>Add Objects</h3>
+                <div class="button-group">
+                    <button class="btn-small" onclick="setObjectType('small')">🌍 Small Planet</button>
+                    <button class="btn-medium" onclick="setObjectType('medium')">🪐 Large Planet</button>
+                    <button class="btn-large" onclick="setObjectType('large')">☀️ Star/Sun</button>
+                </div>
+
+                <h3>Controls</h3>
+                <div class="button-group">
+                    <button class="btn-action" onclick="togglePlay()">⏯️ Play/Pause</button>
+                    <button class="btn-action" onclick="toggleTrails()">✨ Trails On/Off</button>
+                    <button class="btn-danger" onclick="clearObjects()">🗑️ Clear All</button>
+                    <button class="btn-action" onclick="resetSimulation()">🔄 Reset</button>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Objects</div>
+                        <div class="stat-value" id="objectCount">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Status</div>
+                        <div class="stat-value" id="status">Paused</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Mode</div>
+                        <div class="stat-value" id="mode">Small</div>
+                    </div>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #667eea;"></div>
+                        <span>Small Planet</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f5576c;"></div>
+                        <span>Large Planet</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffd700;"></div>
+                        <span>Star</span>
+                    </div>
+                </div>
+
+                <div class="instructions">
+                    <h4>📝 Instructions</h4>
+                    <p>• Click on canvas to place objects</p>
+                    <p>• Drag objects to move them</p>
+                    <p>• Green arrows show gravitational forces</p>
+                    <p>• Brighter arrows = stronger gravity</p>
+                    <p>• Complete challenges in order →</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="challenge-section">
+            <h2 style="color: #4a9eff; margin-bottom: 20px;">🎯 Challenges</h2>
+            
+            <div class="challenge active" id="challenge1">
+                <h3>Challenge 1: The Basics</h3>
+                <p><strong>Goal:</strong> Understand how distance affects gravity</p>
+                <p>1. Place TWO objects (any size) on the canvas</p>
+                <p>2. Watch the green force arrows between them</p>
+                <p>3. Drag one object CLOSER to the other</p>
+                <p>4. Drag it FARTHER away</p>
+                <p><strong>Question:</strong> What happens to the arrows when objects are closer? Record your observation in your worksheet!</p>
+            </div>
+
+            <div class="challenge" id="challenge2">
+                <h3>Challenge 2: Mass Matters</h3>
+                <p><strong>Goal:</strong> See how mass affects gravity</p>
+                <p>1. Clear all objects</p>
+                <p>2. Place a STAR (large mass)</p>
+                <p>3. Place a SMALL PLANET near it</p>
+                <p>4. Watch the force arrows - which are larger?</p>
+                <p>5. Press Play and watch what happens!</p>
+                <p><strong>Question:</strong> Does the planet orbit the star, or does the star orbit the planet? Why?</p>
+            </div>
+
+            <div class="challenge" id="challenge3">
+                <h3>Challenge 3: Create a Solar System</h3>
+                <p><strong>Goal:</strong> Make planets orbit a star</p>
+                <p>1. Place ONE STAR in the center</p>
+                <p>2. Add 3-4 SMALL or MEDIUM planets around it</p>
+                <p>3. Press Play</p>
+                <p>4. Observe which planet moves fastest</p>
+                <p><strong>Question:</strong> Does the closest planet move fastest or slowest? Why?</p>
+                <p><strong>Hint:</strong> If planets fly away, try placing them closer to the star!</p>
+            </div>
+
+            <div class="challenge" id="challenge4">
+                <h3>Challenge 4: Everything Pulls Everything</h3>
+                <p><strong>Goal:</strong> Discover universal gravitation</p>
+                <p>1. Create a system with 5+ objects</p>
+                <p>2. Mix different sizes</p>
+                <p>3. Watch ALL the force arrows</p>
+                <p>4. Notice: EVERY object pulls on EVERY other object!</p>
+                <p><strong>Question:</strong> Count how many force arrows you see. If you have 5 objects, how many pairs are pulling on each other?</p>
+                <p><strong>Hint:</strong> With 5 objects, there should be 10 arrows (5×4÷2)</p>
+            </div>
+
+            <div class="challenge" id="challenge5">
+                <h3>Challenge 5: Design Your Own</h3>
+                <p><strong>Goal:</strong> Create something amazing!</p>
+                <p><strong>Options:</strong></p>
+                <p>• A stable solar system with multiple planets</p>
+                <p>• A binary star system (two stars orbiting each other)</p>
+                <p>• A planet with multiple moons</p>
+                <p>• Something chaotic and interesting!</p>
+                <p><strong>Task:</strong> Once you create something cool, take a screenshot or draw it in your worksheet!</p>
+            </div>
+
+            <div class="info-box">
+                <h4>💡 Pro Tips</h4>
+                <p>• Objects need sideways velocity to orbit (the simulation adds a tiny bit automatically)</p>
+                <p>• Closer objects need to move faster to stay in orbit</p>
+                <p>• If everything crashes together, spread objects out more</p>
+                <p>• Turn on Trails to see orbital paths!</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = Math.min(800, container.clientWidth);
+            canvas.height = 600;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        let objects = [];
+        let isPaused = true;
+        let showTrails = false;
+        let currentType = 'small';
+        let draggedObject = null;
+        const G = 0.5; // Gravitational constant (adjusted for simulation)
+        const trails = [];
+        const maxTrailLength = 50;
+
+        class SpaceObject {
+            constructor(x, y, mass, color, name) {
+                this.x = x;
+                this.y = y;
+                this.vx = Math.random() * 0.5 - 0.25; // Small random velocity
+                this.vy = Math.random() * 0.5 - 0.25;
+                this.mass = mass;
+                this.radius = Math.sqrt(mass) * 3;
+                this.color = color;
+                this.name = name;
+                this.isDragging = false;
+                this.trail = [];
+            }
+
+            draw() {
+                // Draw glow
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 2);
+                gradient.addColorStop(0, this.color);
+                gradient.addColorStop(0.5, this.color + '80');
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw object
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Draw trail
+                if (showTrails && this.trail.length > 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                    for (let i = 1; i < this.trail.length; i++) {
+                        ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                    }
+                    ctx.strokeStyle = this.color + '40';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+
+            update() {
+                if (!this.isDragging && !isPaused) {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Add to trail
+                    if (showTrails) {
+                        this.trail.push({x: this.x, y: this.y});
+                        if (this.trail.length > maxTrailLength) {
+                            this.trail.shift();
+                        }
+                    }
+
+                    // Bounce off walls
+                    if (this.x < this.radius || this.x > canvas.width - this.radius) {
+                        this.vx *= -0.8;
+                        this.x = Math.max(this.radius, Math.min(canvas.width - this.radius, this.x));
+                    }
+                    if (this.y < this.radius || this.y > canvas.height - this.radius) {
+                        this.vy *= -0.8;
+                        this.y = Math.max(this.radius, Math.min(canvas.height - this.radius, this.y));
+                    }
+                }
+            }
+        }
+
+        function setObjectType(type) {
+            currentType = type;
+            document.getElementById('mode').textContent = type.charAt(0).toUpperCase() + type.slice(1);
+        }
+
+        function addObject(x, y, type = currentType) {
+            let mass, color, name;
+            switch(type) {
+                case 'small':
+                    mass = 10;
+                    color = '#667eea';
+                    name = 'Small Planet';
+                    break;
+                case 'medium':
+                    mass = 30;
+                    color = '#f5576c';
+                    name = 'Large Planet';
+                    break;
+                case 'large':
+                    mass = 100;
+                    color = '#ffd700';
+                    name = 'Star';
+                    break;
+            }
+            objects.push(new SpaceObject(x, y, mass, color, name));
+            updateStats();
+        }
+
+        function calculateGravity(obj1, obj2) {
+            const dx = obj2.x - obj1.x;
+            const dy = obj2.y - obj1.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // Prevent division by zero and collision
+            if (distance < obj1.radius + obj2.radius) {
+                return { fx: 0, fy: 0, distance: distance };
+            }
+            
+            const force = (G * obj1.mass * obj2.mass) / (distance * distance);
+            const fx = (force * dx) / distance;
+            const fy = (force * dy) / distance;
+            
+            return { fx, fy, distance };
+        }
+
+        function drawForceArrow(x1, y1, x2, y2, strength) {
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const length = Math.min(dist * 0.3, 60);
+            const angle = Math.atan2(dy, dx);
+            
+            const endX = x1 + Math.cos(angle) * length;
+            const endY = y1 + Math.sin(angle) * length;
+            
+            // Calculate opacity based on strength
+            const opacity = Math.min(strength / 50, 1);
+            
+            // Draw line
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = `rgba(0, 255, 100, ${opacity})`;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Draw arrow head
+            const headLength = 12;
+            ctx.beginPath();
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(
+                endX - headLength * Math.cos(angle - Math.PI / 6),
+                endY - headLength * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(
+                endX - headLength * Math.cos(angle + Math.PI / 6),
+                endY - headLength * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.strokeStyle = `rgba(0, 255, 100, ${opacity})`;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background stars
+            drawStars();
+            
+            // Calculate forces and draw arrows
+            for (let i = 0; i < objects.length; i++) {
+                for (let j = i + 1; j < objects.length; j++) {
+                    const gravity = calculateGravity(objects[i], objects[j]);
+                    
+                    if (!isPaused) {
+                        // Apply forces
+                        objects[i].vx += gravity.fx / objects[i].mass * 0.5;
+                        objects[i].vy += gravity.fy / objects[i].mass * 0.5;
+                        objects[j].vx -= gravity.fx / objects[j].mass * 0.5;
+                        objects[j].vy -= gravity.fy / objects[j].mass * 0.5;
+
+                        // Limit velocity
+                        const maxVel = 10;
+                        objects[i].vx = Math.max(-maxVel, Math.min(maxVel, objects[i].vx));
+                        objects[i].vy = Math.max(-maxVel, Math.min(maxVel, objects[i].vy));
+                        objects[j].vx = Math.max(-maxVel, Math.min(maxVel, objects[j].vx));
+                        objects[j].vy = Math.max(-maxVel, Math.min(maxVel, objects[j].vy));
+                    }
+                    
+                    // Draw force arrows
+                    const force = (G * objects[i].mass * objects[j].mass) / (gravity.distance * gravity.distance);
+                    drawForceArrow(objects[i].x, objects[i].y, objects[j].x, objects[j].y, force);
+                }
+            }
+            
+            // Update and draw objects
+            objects.forEach(obj => {
+                obj.update();
+                obj.draw();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+
+        let stars = [];
+        function drawStars() {
+            if (stars.length === 0) {
+                for (let i = 0; i < 100; i++) {
+                    stars.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        size: Math.random() * 1.5
+                    });
+                }
+            }
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Mouse interaction
+        canvas.addEventListener('click', (e) => {
+            if (!draggedObject) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                addObject(x, y);
+            }
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            for (let obj of objects) {
+                const dist = Math.sqrt((x - obj.x) ** 2 + (y - obj.y) ** 2);
+                if (dist < obj.radius) {
+                    draggedObject = obj;
+                    obj.isDragging = true;
+                    obj.vx = 0;
+                    obj.vy = 0;
+                    obj.trail = []; // Clear trail when dragging
+                    break;
+                }
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (draggedObject) {
+                const rect = canvas.getBoundingClientRect();
+                draggedObject.x = e.clientX - rect.left;
+                draggedObject.y = e.clientY - rect.top;
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (draggedObject) {
+                draggedObject.isDragging = false;
+                draggedObject = null;
+            }
+        });
+
+        function clearObjects() {
+            objects = [];
+            updateStats();
+        }
+
+        function togglePlay() {
+            isPaused = !isPaused;
+            document.getElementById('status').textContent = isPaused ? 'Paused' : 'Running';
+        }
+
+        function toggleTrails() {
+            showTrails = !showTrails;
+            if (!showTrails) {
+                objects.forEach(obj => obj.trail = []);
+            }
+        }
+
+        function resetSimulation() {
+            clearObjects();
+            isPaused = true;
+            showTrails = false;
+            currentType = 'small';
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('objectCount').textContent = objects.length;
+        }
+
+        // Start animation
+        animate();
+        updateStats();
+    </script>
+</body>
+</html>
